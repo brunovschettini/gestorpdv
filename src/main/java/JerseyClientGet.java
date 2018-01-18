@@ -2,6 +2,8 @@
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JerseyClientGet {
 
@@ -9,12 +11,14 @@ public class JerseyClientGet {
         try {
 
             Client client = Client.create();
+            WebResource webResource
+                    = client.resource("http://localhost:8080/gestor/ws/in/")
+                            .queryParam("username", "ilines")
+                            .queryParam("password", "989899");
 
-            WebResource webResource = client
-                    .resource("https://jsonplaceholder.typicode.com/posts/1");
-
-            ClientResponse response = webResource.accept("application/json")
-                    .get(ClientResponse.class);
+            ClientResponse response = webResource
+                    .post(ClientResponse.class);
+            
 
             if (response.getStatus() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : "
