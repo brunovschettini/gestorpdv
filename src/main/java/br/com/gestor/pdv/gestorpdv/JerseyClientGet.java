@@ -1,9 +1,9 @@
+package br.com.gestor.pdv.gestorpdv;
+
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import java.util.HashMap;
-import java.util.Map;
 
 public class JerseyClientGet {
 
@@ -12,7 +12,7 @@ public class JerseyClientGet {
 
             Client client = Client.create();
             WebResource webResource
-                    = client.resource("http://localhost:8080/gestor/ws/in/")
+                    = client.resource("http://localhost:8080/gestor/ws/auth/in")
                             .queryParam("username", "ilines")
                             .queryParam("password", "989899");
 

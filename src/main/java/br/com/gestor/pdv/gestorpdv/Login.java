@@ -1,4 +1,10 @@
+package br.com.gestor.pdv.gestorpdv;
 
+import br.com.gestor.pdv.gestorpdv.security.UserToken;
+import com.google.gson.Gson;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JComponent;
@@ -117,13 +123,13 @@ public class Login extends JFrame {
 
             }
         } else if (jc == auth) {
-//            if (System.getProperty("login") != null) {
-//                if (System.getProperty("password") != null) {
-//                    System.clearProperty("login");
-//                    System.clearProperty("password");
-//                }
-//
-//            }
+            if (System.getProperty("login") != null) {
+                if (System.getProperty("password") != null) {
+                    System.clearProperty("login");
+                    System.clearProperty("password");
+                }
+
+            }
 
             if (login.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Nome de usuário vázio!", "Tela de Login", 0);
@@ -133,12 +139,44 @@ public class Login extends JFrame {
                 JOptionPane.showMessageDialog(null, "Senha esta vázia!", "Tela de Login", 0);
                 return;
             }
-            System.setProperty("login", login.getText());
-            System.setProperty("password", password.getText());
-            PDV pdv = new PDV();
-            pdv.setFocusCycleRoot(true);
-            pdv.setVisible(true);
-            dispose();
+
+            try {
+
+                Client client = Client.create();
+                WebResource webResource
+                        = client.resource("http://localhost:8080/gestor/ws/auth/in")
+                                .queryParam("username", login.getText())
+                                .queryParam("password", password.getText());
+
+                ClientResponse response = webResource
+                        .post(ClientResponse.class);
+
+                if (response.getStatus() != 200) {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                            + response.getStatus());
+                }
+
+                String output = response.getEntity(String.class);
+
+                UserToken ut = new Gson().fromJson(output, UserToken.class);
+
+                System.out.println("Output from Server .... \n");
+                System.out.println(output);
+                System.setProperty("username", ut.getUsers().getPerson().getName());
+                System.setProperty("token", ut.getAccessToken());
+                System.setProperty("user_token", output);
+
+                PDV pdv = new PDV();
+                pdv.setUserToken(ut);
+                pdv.setFocusCycleRoot(true);
+                pdv.setVisible(true);
+                dispose();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
 
         }
 

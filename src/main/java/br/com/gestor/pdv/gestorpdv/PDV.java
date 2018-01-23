@@ -1,4 +1,7 @@
+package br.com.gestor.pdv.gestorpdv;
 
+
+import br.com.gestor.pdv.gestorpdv.security.UserToken;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
@@ -13,15 +16,15 @@ import java.awt.Toolkit;
  */
 public class PDV extends javax.swing.JFrame {
 
-    /**
-     * Creates new form PDV
-     */
+    private UserToken userToken;
+            
     public PDV() {
+        userToken = null;
         initComponents();
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
-        lblUsuario.setText("Usuário : " + System.getProperty("login"));
+        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);        
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -145,4 +148,13 @@ public class PDV extends javax.swing.JFrame {
     private javax.swing.JButton mesa;
     private java.awt.PopupMenu popupMenu1;
     // End of variables declaration//GEN-END:variables
+
+    public UserToken getUserToken() {
+        return userToken;
+    }
+
+    public void setUserToken(UserToken userToken) {
+        this.userToken = userToken;
+        lblUsuario.setText("Usuário : " + userToken.getUsers().getPerson().getName());
+    }
 }
