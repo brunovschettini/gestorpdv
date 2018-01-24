@@ -7,6 +7,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -18,8 +19,66 @@ public class Login extends JFrame {
      */
     public Login() {
         initComponents();
+        login.setFocusable(true);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+    }
+
+    public void auth() {
+        if (System.getProperty("login") != null) {
+            if (System.getProperty("password") != null) {
+                System.clearProperty("login");
+                System.clearProperty("password");
+            }
+
+        }
+
+        if (login.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Nome de usuário vázio!", "Tela de Login", 0);
+            return;
+        }
+        if (password.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Senha esta vázia!", "Tela de Login", 0);
+            return;
+        }
+
+        try {
+
+            Client client = Client.create();
+            WebResource webResource
+                    = client.resource("http://localhost:8080/gestor/ws/auth/in")
+                            .queryParam("username", login.getText())
+                            .queryParam("password", password.getText());
+
+            ClientResponse response = webResource
+                    .post(ClientResponse.class);
+
+            if (response.getStatus() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : "
+                        + response.getStatus());
+            }
+
+            String output = response.getEntity(String.class);
+
+            UserToken ut = new Gson().fromJson(output, UserToken.class);
+
+            System.out.println("Output from Server .... \n");
+            System.out.println(output);
+            System.setProperty("username", ut.getUsers().getPerson().getName());
+            System.setProperty("token", ut.getAccessToken());
+            System.setProperty("user_token", output);
+
+            PDV pdv = new PDV();
+            pdv.setUserToken(ut);
+            pdv.setFocusCycleRoot(true);
+            pdv.setVisible(true);
+            dispose();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
     }
 
     /**
@@ -38,22 +97,39 @@ public class Login extends JFrame {
         auth = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel3 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PDV - Gestor");
         setBackground(new java.awt.Color(255, 255, 255));
-        setBounds(new java.awt.Rectangle(1, 1, 0, 0));
+        setBounds(new java.awt.Rectangle(1, 1, 0, 1));
+        setForeground(java.awt.Color.white);
         setResizable(false);
 
+        password.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         password.setName("password"); // NOI18N
+        password.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordKeyPressed(evt);
+            }
+        });
 
+        login.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         login.setFocusCycleRoot(true);
         login.setName("login"); // NOI18N
+        login.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                loginKeyPressed(evt);
+            }
+        });
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel1.setText("Usuário");
 
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel2.setText("Senha");
 
+        auth.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
         auth.setText("Entrar");
         auth.setActionCommand("login");
         auth.addActionListener(new java.awt.event.ActionListener() {
@@ -62,46 +138,57 @@ public class Login extends JFrame {
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(153, 153, 153));
         jLabel3.setText("PDV - GESTOR");
+
+        jSeparator2.setForeground(new java.awt.Color(255, 255, 255));
+        jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(100, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel3)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel2)
-                        .addComponent(jLabel1)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(350, 350, 350)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(54, 54, 54)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel3)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(login, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                            .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                             .addComponent(auth)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
-                                .addComponent(login)))
-                        .addComponent(jSeparator1)))
-                .addGap(122, 122, 122))
+                            .addComponent(jSeparator1))))
+                .addGap(48, 48, 48))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(36, 36, 36)
+                .addGap(29, 29, 29)
                 .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(login, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(login, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(auth)
-                .addContainerGap(84, Short.MAX_VALUE))
+                .addContainerGap(35, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jSeparator2)
+                .addContainerGap())
         );
 
         pack();
@@ -123,64 +210,26 @@ public class Login extends JFrame {
 
             }
         } else if (jc == auth) {
-            if (System.getProperty("login") != null) {
-                if (System.getProperty("password") != null) {
-                    System.clearProperty("login");
-                    System.clearProperty("password");
-                }
-
-            }
-
-            if (login.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Nome de usuário vázio!", "Tela de Login", 0);
-                return;
-            }
-            if (password.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Senha esta vázia!", "Tela de Login", 0);
-                return;
-            }
-
-            try {
-
-                Client client = Client.create();
-                WebResource webResource
-                        = client.resource("http://localhost:8080/gestor/ws/auth/in")
-                                .queryParam("username", login.getText())
-                                .queryParam("password", password.getText());
-
-                ClientResponse response = webResource
-                        .post(ClientResponse.class);
-
-                if (response.getStatus() != 200) {
-                    throw new RuntimeException("Failed : HTTP error code : "
-                            + response.getStatus());
-                }
-
-                String output = response.getEntity(String.class);
-
-                UserToken ut = new Gson().fromJson(output, UserToken.class);
-
-                System.out.println("Output from Server .... \n");
-                System.out.println(output);
-                System.setProperty("username", ut.getUsers().getPerson().getName());
-                System.setProperty("token", ut.getAccessToken());
-                System.setProperty("user_token", output);
-
-                PDV pdv = new PDV();
-                pdv.setUserToken(ut);
-                pdv.setFocusCycleRoot(true);
-                pdv.setVisible(true);
-                dispose();
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
-            }
-
+            auth();
         }
 
     }//GEN-LAST:event_authActionPerformed
+
+    private void loginKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            login.setFocusable(false);
+            password.setFocusable(true);
+        }
+    }//GEN-LAST:event_loginKeyPressed
+
+    private void passwordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (password.getText().isEmpty()) {
+                return;
+            }
+            auth();
+        }
+    }//GEN-LAST:event_passwordKeyPressed
 
     /**
      * @param args the command line arguments
@@ -223,6 +272,7 @@ public class Login extends JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField login;
     private javax.swing.JPasswordField password;
     // End of variables declaration//GEN-END:variables
